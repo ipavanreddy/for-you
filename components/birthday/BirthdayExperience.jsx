@@ -210,6 +210,8 @@ export default function BirthdayExperience() {
   const openGift = useCallback((index) => {
     setOpenIndex(index);
     setOpened((prev) => (prev.includes(index) ? prev : [...prev, index]));
+    // This tap can also revive a context the browser suspended in the meantime.
+    audio.resume();
     // The tune plays right up until one of them is opened.
     audio.stopMelody();
     // Wait for the flowers to clear, then start the song with the card.

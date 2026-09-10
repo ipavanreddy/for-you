@@ -1132,9 +1132,10 @@
   text-shadow: 0 2px 8px rgba(30, 4, 20, 0.9);
 }
 
+/* The player carries no controls of its own — the buttons above drive it —
+   so it should take up no room at all. */
 .letterAudio {
-  width: min(420px, 92%);
-  height: 36px;
+  display: none;
 }
 
 .stage .giftLink {

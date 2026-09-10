@@ -17,7 +17,21 @@ let loopTimer = null;
 let clip = null;
 let clipTimer = null;
 
+/**
+ * On an iPhone the ring/silent switch mutes anything a page plays, unless the
+ * page says it is playing media rather than making incidental noises. Safari
+ * 16.4 and later expose this; everywhere else it is simply absent.
+ */
+function claimPlayback() {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.audioSession) {
+      navigator.audioSession.type = 'playback';
+    }
+  } catch { /* older Safari, or the property is read-only */ }
+}
+
 function ensure() {
+  claimPlayback();
   if (ctx) return ctx;
   const AudioCtx = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
   if (!AudioCtx) return null;
@@ -44,6 +58,12 @@ export function start(trackSrc) {
   }
 }
 
+/** Nudges a context the browser suspended. Safe to call from any tap. */
+export function resume() {
+  claimPlayback();
+  if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+}
+
 export function setMuted(next) {
   muted = next;
   if (master && ctx) master.gain.setTargetAtTime(muted ? 0 : 0.55, ctx.currentTime, 0.02);
@@ -54,7 +74,6 @@ export function setMuted(next) {
 export function stop() {
   stopMelody();
   stopClip();
-  stopVoice();
   if (music) {
     music.pause();
     music = null;
@@ -157,127 +176,6 @@ export function playClip(src, from = 0, to = null) {
   });
   clip.play().catch(() => { /* file missing, or autoplay refused */ });
   if (to != null) clipTimer = setTimeout(stopClip, Math.max(0, (to - from) * 1000));
-}
-
-/* ── The voice letter ──────────────────────────────────────────────────────
-   Played as a decoded buffer through this same graph, rather than through an
-   <audio> element. The synthesised tune is audible, which proves this path
-   reaches the speakers; a plain <audio> element goes out by a separate route
-   that was producing nothing.
-   ──────────────────────────────────────────────────────────────────────── */
-
-let voiceBuf = null;
-let voiceNode = null;
-let voiceStartedAt = 0;
-let voiceOffset = 0;
-let voicePlaying = false;
-let voiceGainValue = 1.5;
-
-/** Fetches and decodes the recording. Returns its length, or null if there
- *  is no audio context yet (in which case the caller should fall back). */
-export async function loadVoice(url, timeoutMs = 5000) {
-  const c = ensure();
-  if (!c || !url) return null;
-  if (c.state === 'suspended') await c.resume();
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const bytes = await res.arrayBuffer();
-    // decodeAudioData can sit there forever if the platform has no decoder for
-    // the format, so never wait on it indefinitely — give up and let the
-    // caller fall back to an <audio> element.
-    voiceBuf = await Promise.race([
-      c.decodeAudioData(bytes),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('decode timed out')), timeoutMs)),
-    ]);
-    voiceOffset = 0;
-    return voiceBuf.duration;
-  } catch {
-    voiceBuf = null;
-    return null;
-  }
-}
-
-/**
- * Sends an <audio> element's output through this graph. Used when the buffer
- * route isn't available: element audio can come out silent even while the
- * synthesised tune is audible, and this puts it back on the working path.
- * A MediaElementSource can only be created once per element.
- */
-export function routeElement(el, gainValue = 1) {
-  if (!ctx || !el) return false;
-  if (ctx.state === 'suspended') ctx.resume();
-  try {
-    if (!el._wired) {
-      const src = ctx.createMediaElementSource(el);
-      const gain = ctx.createGain();
-      gain.gain.value = gainValue;
-      src.connect(gain).connect(master);
-      el._wired = gain;
-    } else {
-      el._wired.gain.value = gainValue;
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export function playVoice(gainValue = voiceGainValue) {
-  voiceGainValue = gainValue;
-  if (!ctx || !voiceBuf) return false;
-  if (ctx.state === 'suspended') ctx.resume();
-  stopVoiceNode();
-  const gain = ctx.createGain();
-  gain.gain.value = gainValue;
-  voiceNode = ctx.createBufferSource();
-  voiceNode.buffer = voiceBuf;
-  voiceNode.connect(gain).connect(master);
-  voiceNode.onended = () => { if (voicePlaying) voicePlaying = false; };
-  voiceNode.start(0, Math.min(voiceOffset, voiceBuf.duration - 0.05));
-  voiceStartedAt = ctx.currentTime - voiceOffset;
-  voicePlaying = true;
-  return true;
-}
-
-function stopVoiceNode() {
-  if (!voiceNode) return;
-  voiceNode.onended = null;
-  try { voiceNode.stop(); } catch { /* already finished */ }
-  voiceNode = null;
-}
-
-export function pauseVoice() {
-  if (!voicePlaying || !ctx) return;
-  voiceOffset = Math.min(ctx.currentTime - voiceStartedAt, voiceBuf ? voiceBuf.duration : 0);
-  stopVoiceNode();
-  voicePlaying = false;
-}
-
-/** Jumps to a point in the recording, resuming if it was already running. */
-export function seekVoice(seconds) {
-  if (!ctx || !voiceBuf) return;
-  const wasPlaying = voicePlaying;
-  stopVoiceNode();
-  voicePlaying = false;
-  voiceOffset = Math.max(0, Math.min(seconds, voiceBuf.duration - 0.05));
-  if (wasPlaying) playVoice(voiceGainValue);
-}
-
-export function stopVoice() {
-  stopVoiceNode();
-  voicePlaying = false;
-  voiceOffset = 0;
-  voiceBuf = null;
-}
-
-/** Where the recording has got to, for the progress read-out and the reveal. */
-export function voiceTime() {
-  if (!ctx || !voiceBuf) return { at: 0, len: 0, playing: false, ready: false };
-  const at = voicePlaying
-    ? Math.min(ctx.currentTime - voiceStartedAt, voiceBuf.duration)
-    : voiceOffset;
-  return { at, len: voiceBuf.duration, playing: voicePlaying, ready: true };
 }
 
 export function stopClip() {

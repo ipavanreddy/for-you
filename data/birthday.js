@@ -54,7 +54,10 @@ export const birthday = {
       emoji: '🥺', title: 'Sad you',
       // An audio letter: put the file in public/birthday/ and point at it.
       // mp3, m4a, wav and ogg all work.
-      voice: `${BASE}/birthday/letter.wav`,
+      // AAC first: a third the size of the wav, so it starts far sooner on a
+      // phone. The wav stays as a fallback for anything that cannot play AAC.
+      voice: `${BASE}/birthday/letter.m4a`,
+      voiceFallback: `${BASE}/birthday/letter.wav`,
       voiceLabel: 'A letter for you',
       // The written letter, shown on the stationery. Each entry appears as its
       // own line, in step with the recording.

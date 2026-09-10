@@ -1,4 +1,4 @@
 :HL["/for-you/_next/static/chunks/00s7cdrd1ovcm.css","style"]
-:HL["/for-you/_next/static/chunks/0v_aqga8tc8dh.css","style"]
+:HL["/for-you/_next/static/chunks/32slbhki9m1mn.css","style"]
 :HL["https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&family=Caveat:wght@500;600&family=Great+Vibes&family=Fredoka:wght@300..600&display=swap","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}},"staleTime":300,"buildId":"jBSu5xQ2jXhEllMKI-fBJ"}
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}},"staleTime":300,"buildId":"i3XAHHaISSZtKmMe0qxUI"}
