@@ -1,0 +1,11 @@
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #05020C;
+  /* Full-screen scenes should not bounce or side-scroll on a phone. */
+  overscroll-behavior: none;
+}
+
+body { -webkit-text-size-adjust: 100%; }

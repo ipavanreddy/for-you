@@ -1,0 +1,1282 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Birthday greeting — baby-pink sky, fog, cake, gifts flying in an arc.
+   Self-contained: nothing here leaks into the House of Hair site.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.stage {
+  /* Sky runs deeper rose at the top so the fireworks have something to read
+     against, and fades to almost-white where the cake sits. */
+  --sky-top: #F9A8C6;
+  --sky-mid: #FFCCDF;
+  --sky-low: #FFF0F5;
+
+  --icing:   #FFFBFC;
+  --cake-1:  #F7ADC7;
+  --cake-2:  #F094B6;
+  --rose:    #E0507F;
+  --rose-deep: #B23A63;
+  --ink:     #7A2947;
+  --ink-soft: rgba(122, 41, 71, 0.62);
+  --cream:   #FFF8F2;
+
+  --fancy: 'Great Vibes', 'Snell Roundhand', 'Apple Chancery', cursive;
+  --bubble: 'Baloo 2', 'Fredoka', 'Trebuchet MS', sans-serif;
+  --round: 'Fredoka', 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  color: var(--ink);
+  font-family: var(--round);
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 42%, var(--sky-low) 100%);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stage * { box-sizing: border-box; }
+
+.stage button {
+  font: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* ── Layers ──────────────────────────────────────────────────────────────── */
+
+.layer { position: absolute; inset: 0; pointer-events: none; }
+.heartsBg   { z-index: 1; opacity: 0; transition: opacity 900ms ease; }
+.heartsOn   { opacity: 1; }
+.fireworks  { z-index: 2; width: 100%; height: 100%; display: block; }
+.fogLayer   { z-index: 3; }
+.introLayer { z-index: 6; position: absolute; inset: 0; display: grid; place-items: center; padding: 1.5rem; }
+.scene      { z-index: 5; position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; }
+.lockLayer  { z-index: 20; position: absolute; inset: 0; display: grid; place-items: center; padding: 4vh 1rem; overflow-y: auto; }
+.modalLayer { z-index: 30; position: absolute; inset: 0; display: grid; place-items: center; padding: 1.25rem; }
+
+/* ══ 1. LOCK SCREEN — dressed in the cake's own colours ══════════════════ */
+
+.phone {
+  width: min(468px, 92vw);
+  border-radius: 60px;
+  padding: 16px;
+  /* Deep enough to read as a device against a pink background. */
+  background: linear-gradient(160deg, #FFD5E5 0%, #F0A0C0 42%, #D4688E 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.75),
+    0 36px 74px -26px rgba(150, 45, 85, 0.55);
+  animation: phoneIn 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 700ms cubic-bezier(0.6, 0, 0.9, 0.2), opacity 500ms ease 200ms, filter 700ms ease;
+}
+
+@keyframes phoneIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.94); }
+  to   { opacity: 1; transform: none; }
+}
+
+.phoneOpening { transform: scale(1.9); opacity: 0; filter: blur(14px); }
+
+.screen {
+  position: relative;
+  border-radius: 48px;
+  padding: 18px 24px 28px;
+  min-height: 706px;
+  display: flex;
+  flex-direction: column;
+  /* Icing at the top, cake pink at the bottom. */
+  background: linear-gradient(180deg, var(--icing) 0%, #FFEAF1 55%, #FBD3E1 100%);
+  overflow: hidden;
+}
+
+.notch {
+  width: 134px; height: 30px;
+  border-radius: 0 0 19px 19px;
+  background: #F3BDD1;
+  margin: -18px auto 14px;
+}
+
+.statusBar {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; letter-spacing: 0.02em;
+  color: var(--ink-soft);
+  margin-bottom: 18px;
+}
+.statusIcons { display: flex; gap: 5px; align-items: center; }
+.bar { width: 3px; background: currentColor; border-radius: 1px; }
+.battery {
+  width: 20px; height: 10px;
+  border: 1px solid currentColor; border-radius: 3px;
+  position: relative; padding: 1px;
+}
+.battery::after {
+  content: ''; position: absolute; right: -3px; top: 3px;
+  width: 2px; height: 4px; border-radius: 0 1px 1px 0; background: currentColor;
+}
+.batteryFill { height: 100%; width: 72%; background: currentColor; border-radius: 1px; }
+
+.clock {
+  text-align: center;
+  font-size: 72px; font-weight: 500; line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--rose-deep);
+  min-height: 72px;
+}
+.clockDate { text-align: center; font-size: 16px; color: var(--ink-soft); margin-top: 6px; }
+
+.lockIcon { display: block; margin: 26px auto 12px; color: var(--rose); transform: scale(1.2); }
+.prompt { text-align: center; font-size: 18px; color: var(--ink-soft); }
+
+.dots { display: flex; justify-content: center; gap: 16px; margin: 16px 0 18px; }
+.dot {
+  width: 17px; height: 17px; border-radius: 50%;
+  border: 2px solid rgba(178, 58, 99, 0.5);
+  transition: background 160ms ease, transform 160ms ease;
+}
+.dotFilled { background: var(--rose); border-color: var(--rose); transform: scale(1.12); }
+
+.keypad {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px 26px; margin-top: auto; justify-items: center;
+}
+
+.key {
+  width: 86px; height: 86px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 2px 6px -2px rgba(178, 58, 99, 0.3);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px;
+  color: var(--rose-deep);
+  transition: background 120ms ease, transform 120ms ease;
+}
+.key:active { background: #FFD6E5; transform: scale(0.93); }
+.keyNum { font-size: 35px; font-weight: 400; line-height: 1; }
+.keyLetters { font-size: 11px; letter-spacing: 0.16em; opacity: 0.55; }
+.keyGhost { background: none; box-shadow: none; pointer-events: none; }
+.keyText { background: none; box-shadow: none; font-size: 16px; }
+
+.hint {
+  text-align: center; font-size: 12px; margin-top: 14px; min-height: 16px;
+  color: var(--rose); opacity: 0; transition: opacity 300ms ease;
+}
+.hintShown { opacity: 1; }
+
+.wrong { animation: shake 480ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+@keyframes shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-8px); }
+  40%, 60% { transform: translateX(8px); }
+}
+
+.scanLine {
+  position: absolute; left: 0; right: 0; top: 0; height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+  opacity: 0; pointer-events: none;
+}
+.unlocking .scanLine { animation: scan 700ms ease-out forwards; }
+@keyframes scan {
+  0%   { opacity: 1; transform: translateY(-100%); }
+  100% { opacity: 0; transform: translateY(300%); }
+}
+
+.qrNote {
+  margin-top: 22px; text-align: center; font-size: 12px;
+  color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+/* ══ 2. FOG ═══════════════════════════════════════════════════════════════ */
+
+.fogBank {
+  position: absolute; left: -30%; right: -30%;
+  height: 74%; bottom: -14%;
+  opacity: 0; transition: opacity 1600ms ease;
+}
+.fogVisible { opacity: 1; }
+.fogThin    { opacity: 0.45; }
+
+.fogPuff {
+  position: absolute; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.92) 0%, rgba(255, 232, 241, 0.5) 45%, transparent 72%);
+  filter: blur(30px);
+  animation: drift linear infinite;
+}
+
+@keyframes drift {
+  0%   { transform: translateX(-14%) translateY(0) scale(1); }
+  50%  { transform: translateX(14%) translateY(-4%) scale(1.12); }
+  100% { transform: translateX(-14%) translateY(0) scale(1); }
+}
+
+/* ══ 2a. THE HEARTS BACKDROP ═════════════════════════════════════════════ */
+
+.heartsPhoto {
+  position: absolute;
+  inset: -6%;
+  background-size: cover;
+  background-position: center;
+  /* Slow drift so the photo itself is never quite still. */
+  animation: heartsDrift 46s ease-in-out infinite alternate;
+}
+
+@keyframes heartsDrift {
+  0%   { transform: scale(1.06) translate3d(-1.5%, 1%, 0); }
+  100% { transform: scale(1.16) translate3d(1.5%, -2%, 0); }
+}
+
+/* A wash that keeps the cake and text readable over the busy photo. */
+.heartsVeil {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(70% 55% at 50% 62%, rgba(38, 6, 26, 0.5) 0%, transparent 72%),
+    linear-gradient(180deg, rgba(30, 4, 20, 0.32) 0%, rgba(30, 4, 20, 0.1) 45%, rgba(30, 4, 20, 0.42) 100%);
+}
+
+.floater {
+  position: absolute;
+  bottom: -14vh;
+  animation: floatUp linear infinite;
+  will-change: transform;
+}
+
+/* Rises the full height while swaying, so the drift never looks mechanical. */
+@keyframes floatUp {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+  8%   { opacity: 1; }
+  25%  { transform: translate3d(26px, -32vh, 0) rotate(8deg); }
+  50%  { transform: translate3d(-18px, -62vh, 0) rotate(-6deg); }
+  75%  { transform: translate3d(22px, -92vh, 0) rotate(7deg); }
+  92%  { opacity: 1; }
+  100% { transform: translate3d(-8px, -124vh, 0) rotate(-4deg); opacity: 0; }
+}
+
+/* Two circles and a square, turned 45° — the classic CSS heart. The glitter
+   speckle rides along because the pseudo-elements inherit the background. */
+.heart {
+  position: relative;
+  transform: rotate(-45deg);
+  border-radius: 0 0 4% 4%;
+}
+.heart::before,
+.heart::after {
+  content: '';
+  position: absolute;
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  background: inherit;
+}
+.heart::before { top: -50%; left: 0; }
+.heart::after  { left: 50%; top: 0; }
+
+.spark {
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFE7B0 0%, rgba(232, 180, 74, 0.7) 45%, transparent 72%);
+}
+
+/* ══ 2b. THE BUBBLE-FONT LINE ════════════════════════════════════════════ */
+
+.introBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.7rem, 2.4vh, 1.3rem);
+  padding: 0;
+  transition: opacity 800ms ease, transform 800ms ease, filter 800ms ease;
+  animation: introBreathe 3.2s ease-in-out infinite 2.2s;
+}
+.introBlock:hover { filter: brightness(1.03); }
+.introBlock:active { transform: scale(0.985); }
+
+@keyframes introBreathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.022); }
+}
+
+.introHint {
+  font-size: 0.82rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0;
+  opacity: 0;
+  animation: fadeIn 700ms ease forwards;
+  animation-delay: 1900ms;
+}
+
+.introOut { opacity: 0; transform: scale(1.08); filter: blur(6px); }
+
+.introPhoto {
+  display: block;
+  width: clamp(230px, 33vw, 380px);
+  height: auto;
+  /* No frame — the cut-out character sits straight on the background. */
+  filter: drop-shadow(0 20px 26px rgba(150, 45, 85, 0.35));
+  opacity: 0;
+  transform: translateY(26px) scale(0.9) rotate(-2deg);
+  animation: photoIn 780ms cubic-bezier(0.2, 1.35, 0.4, 1) forwards;
+  /* Lands just after the last letter of the sentence has popped. */
+  animation-delay: 1150ms;
+}
+
+@keyframes photoIn {
+  to { opacity: 1; transform: none; }
+}
+
+.bubbleLine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0 0.32em;
+  max-width: 16ch;
+  font-family: var(--bubble);
+  font-weight: 800;
+  font-size: clamp(2.1rem, 7.2vw, 4.6rem);
+  line-height: 1.18;
+  transition: opacity 800ms ease, transform 800ms ease, filter 800ms ease;
+}
+
+.bubbleWord { display: inline-flex; }
+
+.bubbleChar {
+  display: inline-block;
+  color: #fff;
+  /* Eight offsets make the outline, then a hard drop and a soft one give the
+     letters their inflated, three-dimensional look. */
+  text-shadow:
+    -2px -2px 0 var(--rose-deep),  2px -2px 0 var(--rose-deep),
+    -2px  2px 0 var(--rose-deep),  2px  2px 0 var(--rose-deep),
+     0   -3px 0 var(--rose-deep),  0    3px 0 var(--rose-deep),
+    -3px  0   0 var(--rose-deep),  3px  0   0 var(--rose-deep),
+     0    9px 0 rgba(178, 58, 99, 0.32),
+     0   16px 28px rgba(178, 58, 99, 0.34);
+  opacity: 0;
+  animation: bubblePop 700ms cubic-bezier(0.18, 1.5, 0.42, 1) forwards;
+  animation-delay: calc(var(--i) * 45ms);
+}
+
+@keyframes bubblePop {
+  0%   { opacity: 0; transform: translateY(34px) scale(0.3) rotate(-14deg); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+/* ══ 3. SCENE ═════════════════════════════════════════════════════════════ */
+
+.sceneInner {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  justify-content: safe center;
+  gap: clamp(0.5rem, 2vh, 1.25rem);
+  padding: clamp(1rem, 3vh, 2rem) 1rem clamp(1rem, 3vh, 2rem);
+}
+
+.greeting {
+  width: 100%;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 900ms ease, transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.greetingIn { opacity: 1; transform: none; }
+
+.greetingText {
+  font-family: var(--fancy);
+  font-weight: 400;
+  font-size: clamp(3.2rem, 9.6vw, 7.5rem);
+  line-height: 1.12;
+  max-width: 100%;
+  margin: 0;
+  color: var(--rose-deep);
+  /* Great Vibes ships in one weight, so the stroke is what gives it weight.
+     paint-order keeps the stroke outside the glyph instead of eating it. */
+  -webkit-text-stroke: 2.5px var(--rose-deep);
+  paint-order: stroke fill;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.75), 0 12px 30px rgba(178, 58, 99, 0.22);
+}
+
+/* ── The arena: cake dead centre, gifts on an arc around it ─────────────── */
+
+.arena {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  margin: clamp(34px, 5.5vh, 80px) auto 0;
+  /* Arc geometry. Gifts are placed by `left` + `bottom`, both measured
+     from the cake's middle, so the ring survives any arena height. */
+  --cake-mid: clamp(226px, 31vh, 312px);   /* cake's middle, above its own base */
+  --cake-lift: 0px;
+  --cake-cy: calc(var(--cake-mid) + var(--cake-lift));
+  /* Radii of the semicircle the cut-outs sit on. */
+  --arc-rx: clamp(290px, 37vw, 520px);
+  --arc-ry: clamp(690px, 76vh, 860px);
+  /* Headroom above the cake. A flat 110px was less than half a cut-out's
+     height, so the top one hung out over the arena and hit the title. */
+  --arc-head: 120px;
+  height: calc(var(--cake-cy) + var(--arc-ry) + var(--arc-head));
+  transition: height 700ms ease;
+}
+
+/* Once the three are actually on screen the flame control has gone, so the
+   room exists to hold them well clear of the greeting. */
+.arenaTall { --arc-head: 300px; }
+
+/* ── The cake ────────────────────────────────────────────────────────────── */
+
+.cakeWrap {
+  position: absolute;
+  left: 50%; bottom: var(--cake-lift);
+  width: 750px;
+  margin-left: -375px;
+  padding-top: 278px;      /* headroom for the candle and flame */
+  opacity: 0;
+  transform: translateY(90px) scale(0.7);
+  filter: blur(10px);
+  transition:
+    opacity 1500ms ease,
+    transform 1800ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 1500ms ease;
+}
+.cakeIn { opacity: 1; transform: none; filter: none; }
+
+.cakeGlow {
+  position: absolute; left: 50%; top: 64%;
+  width: 1140px; height: 1140px; margin: -570px 0 0 -570px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.75) 0%, rgba(255, 214, 231, 0.4) 38%, transparent 68%);
+  pointer-events: none;
+  transition: opacity 900ms ease;
+  animation: breathe 5s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+.glowDim { opacity: 0.35; animation: none; }
+
+.cake { position: relative; width: 750px; }
+
+.tier {
+  position: relative;
+  margin: 0 auto;
+  border-radius: 12px 12px 10px 10px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.3), transparent 26%),
+    repeating-linear-gradient(90deg, var(--cake-1) 0 28px, var(--cake-2) 28px 56px);
+  box-shadow: inset 0 -18px 30px -16px rgba(150, 45, 85, 0.5), 0 10px 26px -14px rgba(150, 45, 85, 0.5);
+}
+.tier1 { width: 656px; height: 204px; }
+.tier2 { width: 497px; height: 169px; }
+.tier3 { width: 343px; height: 143px; }
+
+.icing {
+  position: absolute; left: -8px; right: -8px; top: -33px;
+  height: 85px;
+  background: linear-gradient(180deg, #FFFFFF 0%, var(--icing) 55%, #FFE9F0 100%);
+  border-radius: 41px 41px 14px 14px;
+  box-shadow: 0 4px 0 rgba(255, 220, 232, 0.85);
+}
+.icing::after {
+  content: '';
+  position: absolute; left: 0; right: 0; top: 100%; height: 49px;
+  background: radial-gradient(circle at 23px 0, #FFE9F0 22px, transparent 23px) repeat-x 0 0 / 73px 49px;
+}
+
+.sprinkle { position: absolute; width: 22px; height: 8.6px; border-radius: 5px; }
+
+.plate {
+  width: 789px; height: 44px; margin: 0 auto;
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  background: linear-gradient(180deg, #FFFFFF, #F1C3D5);
+  box-shadow: 0 16px 30px -16px rgba(150, 45, 85, 0.5);
+}
+.plateShadow {
+  width: 878px; height: 59px; margin: -14px auto 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(196, 92, 132, 0.35), transparent 70%);
+  filter: blur(7px);
+}
+
+.candle {
+  position: absolute; left: 50%; top: -124px;
+  width: 54px; height: 142px; margin-left: -27px;
+  border-radius: 5px 5px 3px 3px;
+  background: repeating-linear-gradient(135deg, #FFFFFF 0 9px, #FF8FB6 9px 18px);
+  box-shadow: inset -5px 0 10px -5px rgba(150, 45, 85, 0.45);
+}
+.wick {
+  position: absolute; left: 50%; top: -18px;
+  width: 4.6px; height: 20px; margin-left: -2.3px;
+  background: #6B4433; border-radius: 1px;
+}
+
+.flame {
+  position: absolute; left: 50%; top: -88px;
+  width: 53px; height: 86px; margin-left: -26.5px;
+  border-radius: 50% 50% 44% 44% / 66% 66% 34% 34%;
+  background: radial-gradient(ellipse at 50% 80%, #FFFDF2 0%, #FFE08A 24%, #FFB43C 50%, #FF7A22 76%, rgba(255, 92, 0, 0) 100%);
+  transform-origin: bottom center;
+  animation: flicker 1.1s ease-in-out infinite;
+  transition: opacity 420ms ease, transform 600ms cubic-bezier(0.4, 0, 1, 1);
+}
+.flame::before {
+  content: '';
+  position: absolute; left: 50%; bottom: 7px;
+  width: 20px; height: 30px; margin-left: -10px;
+  border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
+  background: radial-gradient(ellipse at 50% 70%, #CFF0FF 0%, rgba(90, 180, 255, 0.5) 60%, transparent 100%);
+}
+.flame::after {
+  content: '';
+  position: absolute; left: 50%; top: 45%;
+  width: 350px; height: 350px; margin: -175px 0 0 -175px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 168, 60, 0.34) 0%, rgba(255, 120, 40, 0.1) 42%, transparent 68%);
+  animation: breathe 2.6s ease-in-out infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { transform: scale(1) skewX(0deg); }
+  25%      { transform: scale(1.06, 0.96) skewX(3deg); }
+  50%      { transform: scale(0.94, 1.08) skewX(-2deg); }
+  75%      { transform: scale(1.04, 0.98) skewX(2deg); }
+}
+
+.flameOut {
+  opacity: 0;
+  transform: translateX(30px) rotate(48deg) scale(0.2);
+  animation: none;
+}
+
+.smoke {
+  position: absolute; left: 50%; top: -70px;
+  width: 27px; height: 27px; margin-left: -13.5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  filter: blur(6px);
+  opacity: 0;
+}
+.smokeGo { animation: smokeRise 2.6s ease-out forwards; }
+@keyframes smokeRise {
+  0%   { opacity: 0.9; transform: translateY(0) scale(0.5); }
+  100% { opacity: 0;   transform: translateY(-130px) translateX(22px) scale(3.6); }
+}
+
+.gust { position: absolute; inset: -40% -60%; pointer-events: none; opacity: 0; }
+.gustGo { animation: gustSweep 900ms ease-out forwards; }
+@keyframes gustSweep {
+  0%   { opacity: 0;   transform: translateX(-60%); }
+  25%  { opacity: 0.9; }
+  100% { opacity: 0;   transform: translateX(60%); }
+}
+.gustLine {
+  position: absolute; height: 2.5px; border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+  filter: blur(1px);
+}
+
+/* ── The "blow the flame" box ────────────────────────────────────────────── */
+
+.blowBox {
+  z-index: 8;
+  /* The plate's shadow hangs below the cake, which left a gap here. */
+  margin-top: -42px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  opacity: 0;
+  transform: translateY(16px) scale(0.94);
+  /* max-height is animatable where `height: auto` isn't — it lets the control
+     collapse out of the column instead of leaving a hole above the cards. */
+  max-height: 420px;
+  overflow: hidden;
+  transition:
+    opacity 500ms ease,
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    max-height 600ms ease 260ms;
+}
+.blowIn { opacity: 1; transform: none; }
+.blowBox:hover { transform: scale(1.05); }
+.blowBox:active { transform: scale(0.97); }
+.blowGone {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.9);
+  pointer-events: none;
+  max-height: 0;
+}
+
+.blowPic { position: relative; display: block; }
+
+.blowImg {
+  display: block;
+  width: clamp(180px, 17vw, 250px);
+  height: auto;
+  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.45));
+}
+
+.blowLabel {
+  display: block;
+  margin-top: -4px;
+  text-align: center;
+  font-family: var(--bubble);
+  font-size: clamp(1.05rem, 1.4vw, 1.3rem);
+  font-weight: 800;
+  white-space: nowrap;
+  color: #fff;
+  text-shadow:
+    -1.8px -1.8px 0 var(--rose-deep),  1.8px -1.8px 0 var(--rose-deep),
+    -1.8px  1.8px 0 var(--rose-deep),  1.8px  1.8px 0 var(--rose-deep),
+     0 2px 8px rgba(60, 8, 34, 0.9);
+}
+
+.blowSub { font-size: 0.8rem; color: var(--ink-soft); margin: 0; letter-spacing: 0.04em; }
+
+/* ══ 4. GIFTS — cut-outs on a semicircle around the cake ════════════════ */
+
+.giftSlot {
+  /* Every slot shares the same box — parked at the middle of the cake — and the
+     arc offset lives entirely in the transform. Offsetting with `left` instead
+     would give each slot a different shrink-to-fit width, skewing the arc. */
+  position: absolute;
+  left: 50%;
+  bottom: var(--cake-cy);
+  width: clamp(268px, 25vw, 368px);
+  z-index: 7;
+  will-change: transform;
+  opacity: 0;
+  animation: flyIn 860ms cubic-bezier(0.2, 1.35, 0.4, 1) forwards;
+  animation-delay: calc(var(--i) * 170ms);
+}
+
+/* Flies out from behind the cake to its place on the arc. */
+@keyframes flyIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 50%) scale(0.15) rotate(-30deg);
+  }
+  55% { opacity: 1; }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 50%) translate(var(--ax), var(--ay)) scale(1) rotate(0deg);
+  }
+}
+
+/* Separate element so the endless bob never fights the fly-in transform. */
+.giftFloat {
+  display: block;
+  animation: bob 3.8s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 300ms);
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-11px) rotate(1.2deg); }
+}
+
+.giftBtn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1), filter 200ms ease;
+}
+.giftBtn:hover { transform: scale(1.08); }
+.giftBtn:active { transform: scale(0.97); }
+.giftTaken { filter: saturate(0.55) brightness(0.88); }
+
+.giftPic { display: block; }
+
+.giftImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* No frame — the cut-out sits straight on the backdrop. */
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.5));
+}
+
+.giftName {
+  display: block;
+  margin-top: 0.28rem;
+  text-align: center;
+  font-family: var(--bubble);
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: #FFF3DC;
+  /* Outlined, because the hearts photo behind it is busy and mid-toned. */
+  text-shadow:
+    -2px -2px 0 var(--rose-deep),  2px -2px 0 var(--rose-deep),
+    -2px  2px 0 var(--rose-deep),  2px  2px 0 var(--rose-deep),
+     0 -2px 0 var(--rose-deep),  0 2px 0 var(--rose-deep),
+    -2px 0 0 var(--rose-deep),   2px 0 0 var(--rose-deep),
+     0 4px 12px rgba(30, 4, 20, 0.95);
+}
+
+/* ══ 5. GIFT MODAL ════════════════════════════════════════════════════════ */
+
+.flowerLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 31;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.petal {
+  position: absolute;
+  display: block;
+  height: auto;
+  opacity: 0;
+  transform-origin: center;
+  animation-name: rainDown;
+  animation-timing-function: cubic-bezier(0.22, 0.7, 0.3, 1);
+  animation-fill-mode: forwards;
+  will-change: transform, opacity;
+}
+
+/* Two kinds: most settle where they land and stay, carpeting the background
+   for the collage to open against; the rest sweep past and fall away. */
+.petalStay { animation-name: rainSettle; }
+
+@keyframes rainSettle {
+  0%   { opacity: 0; transform: translate(-50%, -50%) translateY(-125vh) rotate(var(--r0)) scale(0.7); }
+  12%  { opacity: 1; }
+  55%  { transform: translate(-50%, -50%) translateY(0) rotate(var(--r1)) scale(1); }
+  100% { opacity: 1; transform: translate(-50%, -50%) translateY(0) rotate(var(--r1)) scale(1); }
+}
+
+/* Falls in, covers the screen, holds, then drops away entirely. */
+@keyframes rainDown {
+  0%   { opacity: 0; transform: translate(-50%, -50%) translateY(-125vh) rotate(var(--r0)) scale(0.7); }
+  10%  { opacity: 1; }
+  38%  { opacity: 1; transform: translate(-50%, -50%) translateY(0) rotate(var(--r1)) scale(1); }
+  58%  { opacity: 1; transform: translate(-50%, -50%) translateY(0) rotate(var(--r1)) scale(1); }
+  88%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) translateY(130vh) rotate(var(--r2)) scale(0.94); }
+}
+
+.scrim {
+  position: absolute; inset: 0;
+  background: rgba(255, 214, 231, 0.62);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: fadeIn 500ms ease both;
+}
+
+/* Solid light pink behind the collage — the cut-outs disappear completely,
+   and the flowers have something soft to sit on rather than black. */
+.scrimSolid {
+  background:
+    radial-gradient(120% 90% at 50% 38%, #FFE7F1 0%, #FCC9DD 58%, #F3AECB 100%);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.giftCard {
+  position: relative;
+  z-index: 33;   /* above the falling flowers */
+  width: min(400px, 92vw);
+  padding: 2rem 1.6rem 1.6rem;
+  border-radius: 26px;
+  text-align: center;
+  background: linear-gradient(170deg, #FFFFFF 0%, #FFEFF5 100%);
+  border: 1px solid rgba(224, 80, 127, 0.35);
+  box-shadow: 0 30px 70px -22px rgba(120, 30, 70, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.9);
+  animation: giftIn 520ms cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+/* Waits for the flowers to fall away, then opens out of the middle of nowhere. */
+.giftCardLate {
+  animation-name: bloomOpen;
+  animation-duration: 1600ms;
+  animation-timing-function: cubic-bezier(0.18, 0.9, 0.28, 1);
+  animation-delay: 2750ms;
+}
+
+/* Grows straight out of the centre point — no tilt, no travel. */
+@keyframes bloomOpen {
+  0%   { opacity: 0; transform: scale(0.01); filter: blur(16px); }
+  20%  { opacity: 1; }
+  65%  { transform: scale(1.045); filter: blur(0); }
+  84%  { transform: scale(0.99); }
+  100% { opacity: 1; transform: scale(1); filter: none; }
+}
+
+/* A card carrying a picture needs the room, and a way to scroll on a phone. */
+.giftCardWide {
+  /* Hugs the picture rather than boxing it. */
+  position: relative;
+  width: auto;
+  max-width: min(1060px, 98vw);
+  max-height: 97vh;
+  overflow: visible;
+  padding: 10px;
+}
+
+.giftCardImg {
+  display: block;
+  /* The collage is tall, so height is what limits it on a laptop. Capping it
+     here keeps the caption and the close button on screen. */
+  width: auto;
+  max-width: 100%;
+  max-height: 92vh;
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 16px 34px -18px rgba(0, 0, 0, 0.7);
+}
+@keyframes giftIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.86) rotate(-2deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+.giftEmoji { font-size: 2.6rem; line-height: 1; display: block; margin-bottom: 0.6rem; }
+.giftIndex {
+  font-size: 0.66rem; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--ink-soft); margin: 0 0 0.5rem;
+}
+.giftTitle { font-family: var(--fancy); font-size: 2.3rem; margin: 0 0 0.5rem; color: var(--rose-deep); font-weight: 400; }
+.giftBody  { font-size: 0.94rem; line-height: 1.55; color: var(--ink); margin: 0 0 1.4rem; }
+
+/* Scoped to .stage so it outranks the `.stage button { background: none }`
+   reset, which is otherwise the more specific selector. */
+.stage .cardClose {
+  position: absolute;
+  top: -13px; right: -13px;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--rose);
+  color: #fff;
+  font-size: 25px;
+  line-height: 1;
+  box-shadow: 0 8px 18px -6px rgba(0, 0, 0, 0.7);
+  transition: background 180ms ease, transform 180ms ease;
+}
+.stage .cardClose:hover { background: var(--rose-deep); transform: scale(1.08); }
+
+.voiceBox {
+  margin: 0 0 1.2rem;
+}
+
+.voiceLabel {
+  margin: 0 0 0.5rem;
+  font-family: var(--bubble);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--rose-deep);
+}
+
+.voicePlayer {
+  display: block;
+  width: 100%;
+  height: 40px;
+  border-radius: 999px;
+}
+
+.onHearts .voiceLabel { color: #FFD9A0; }
+
+/* ── The playlist card ──────────────────────────────────────────────────── */
+
+.playlistCard {
+  position: relative;
+  z-index: 33;
+  width: min(400px, 92vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  animation: bloomOpen 1200ms cubic-bezier(0.18, 0.9, 0.28, 1) both;
+}
+
+.playlistPaper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 338 / 609;   /* matches the card photo */
+  background-size: 100% 100%;
+  border-radius: 12px;
+  box-shadow: 0 30px 70px -22px rgba(60, 12, 30, 0.8);
+}
+
+.playlistTitle {
+  position: absolute;
+  /* On the card itself, in the clear space above the balloons. The photo is
+     taken at an angle, so the line is turned to sit square on the paper. */
+  left: 68%;
+  top: 14%;
+  width: 76%;
+  transform: translate(-50%, -50%) rotate(-16deg);
+  margin: 0;
+  text-align: center;
+  font-family: var(--bubble);
+  font-size: clamp(1.1rem, 4.4vw, 1.5rem);
+  font-weight: 800;
+  color: #fff;
+  text-shadow:
+    -2px -2px 0 #8E1B33,  2px -2px 0 #8E1B33,
+    -2px  2px 0 #8E1B33,  2px  2px 0 #8E1B33,
+     0 -2px 0 #8E1B33,  0 2px 0 #8E1B33,
+    -2px 0 0 #8E1B33,   2px 0 0 #8E1B33,
+     0 5px 14px rgba(60, 8, 26, 0.7);
+}
+
+.playlistPlayer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.playlistFrame {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: 12px;
+  background: #000;
+  box-shadow: 0 26px 60px -22px rgba(60, 12, 30, 0.8);
+}
+
+.stage .playlistOpen {
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  font-family: var(--bubble);
+  font-size: 0.88rem;
+  font-weight: 800;
+  background: var(--rose);
+  color: #fff;
+  transition: background 180ms ease;
+}
+.stage .playlistOpen:hover { background: var(--rose-deep); }
+
+.playlistNote {
+  margin: 0;
+  text-align: center;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: rgba(255, 230, 192, 0.8);
+}
+
+.playlistRow {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* One per balloon. */
+.playlistHeart {
+  position: absolute;
+  width: 13%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px -3px rgba(60, 8, 26, 0.6);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), background 200ms ease;
+  animation: heartBeat 2.6s ease-in-out infinite;
+}
+.stage .playlistHeart { background: rgba(255, 255, 255, 0.9); }
+.playlistHeart:nth-child(even) { animation-delay: 0.5s; }
+.stage .playlistHeart:hover {
+  transform: translate(-50%, -50%) scale(1.22);
+  background: #fff;
+}
+.playlistHeart svg {
+  width: 62%;
+  height: 62%;
+  fill: #D8305A;
+}
+
+@keyframes heartBeat {
+  0%, 100% { box-shadow: 0 4px 12px -3px rgba(60, 8, 26, 0.6); }
+  50%      { box-shadow: 0 4px 20px -2px rgba(216, 48, 90, 0.85); }
+}
+
+/* ── The written letter ─────────────────────────────────────────────────── */
+
+.letterCard {
+  position: relative;
+  z-index: 33;
+  width: min(520px, 94vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  animation: bloomOpen 1200ms cubic-bezier(0.18, 0.9, 0.28, 1) both;
+}
+
+.letterPaper {
+  position: relative;
+  width: 100%;
+  /* Matches the stationery, so the torn paper lands where the text goes. */
+  aspect-ratio: 530 / 747;
+  background-size: 100% 100%;
+  border-radius: 10px;
+  box-shadow: 0 30px 70px -22px rgba(60, 12, 30, 0.75);
+}
+
+/* Sits over the torn sheet in the middle of the stationery. */
+.letterText {
+  position: absolute;
+  /* Measured off the stationery. The sheet runs 16.6%-83.8% across, but the
+     lipstick mark covers its top-left down to y=300px and the ribbon cuts into
+     the bottom-right from y=555px. This is the band that is clear of both. */
+  left: 19%;
+  top: 41.5%;
+  width: 62%;
+  height: 31.5%;
+  overflow-y: auto;
+  padding-right: 4px;
+  font-family: 'Caveat', 'Bradley Hand', cursive;
+  font-size: clamp(0.85rem, 2.3vw, 1.05rem);
+  line-height: 1.4;
+  color: #6B2338;
+  scrollbar-width: thin;
+}
+
+.letterLine {
+  margin: 0 0 0.7em;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+.letterLineIn { opacity: 1; transform: none; }
+
+.letterTrack {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(430px, 94%);
+}
+
+.stage .letterSkip {
+  flex: none;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-family: var(--bubble);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--rose-deep);
+  transition: background 160ms ease;
+}
+.stage .letterSkip:hover { background: #fff; }
+
+.letterSeek {
+  flex: 1;
+  height: 22px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+.letterSeek::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+}
+.letterSeek::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+}
+.letterSeek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px; height: 16px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--rose);
+  border: 2px solid #fff;
+}
+.letterSeek::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--rose);
+  border: 2px solid #fff;
+}
+
+.letterControls { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
+
+.stage .letterPlay,
+.stage .letterDone {
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  font-family: var(--bubble);
+  font-size: 0.92rem;
+  font-weight: 800;
+  background: var(--rose);
+  color: #fff;
+  transition: background 180ms ease;
+}
+.stage .letterPlay:hover { background: var(--rose-deep); }
+.stage .letterDone {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--rose-deep);
+}
+
+.letterStatus {
+  margin: 0;
+  font-family: var(--bubble);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #FFE6C0;
+  text-shadow: 0 2px 8px rgba(30, 4, 20, 0.9);
+}
+
+.letterAudio {
+  width: min(420px, 92%);
+  height: 36px;
+}
+
+.stage .giftLink {
+  display: inline-block;
+  margin: 0 0.5rem 0.9rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 999px;
+  background: rgba(224, 80, 127, 0.16);
+  border: 1px solid var(--rose);
+  color: var(--rose-deep);
+  font-size: 0.85rem;
+  transition: background 180ms ease;
+}
+.stage .giftLink:hover { background: rgba(224, 80, 127, 0.3); }
+.onHearts .giftLink { color: #FFD9A0; border-color: rgba(255, 214, 160, 0.6); }
+
+.stage .giftClose {
+  padding: 0.6rem 1.5rem; border-radius: 999px;
+  background: var(--rose); color: #fff;
+  font-size: 0.85rem;
+  transition: background 180ms ease;
+}
+.stage .giftClose:hover { background: var(--rose-deep); }
+
+.corner {
+  position: absolute;
+  right: 14px; bottom: 12px;
+  z-index: 25;
+  display: flex;
+  gap: 8px;
+}
+
+.replay,
+.iconBtn {
+  font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--rose-deep);
+  opacity: 0.45;
+  padding: 0.4rem 0.75rem; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  transition: opacity 200ms ease;
+}
+.replay:hover,
+.iconBtn:hover { opacity: 1; }
+
+.onHearts .iconBtn {
+  color: #FFE6C0;
+  background: rgba(36, 7, 25, 0.6);
+}
+
+/* ══ 7. ON THE HEARTS BACKDROP ═══════════════════════════════════════════
+   Once the dark photo is behind everything, the rose-on-pink palette stops
+   working. These are targeted overrides rather than variable swaps, so the
+   cake's own colours stay exactly as they are.
+   ════════════════════════════════════════════════════════════════════════ */
+
+.onHearts .greetingText {
+  color: #FFEAC0;
+  -webkit-text-stroke: 2.5px #FFEAC0;
+  text-shadow:
+    0 0 26px rgba(255, 200, 120, 0.55),
+    0 3px 0 rgba(90, 20, 55, 0.45),
+    0 16px 42px rgba(16, 2, 12, 0.8);
+}
+
+.onHearts .blowSub { color: rgba(255, 235, 203, 0.8); }
+
+.onHearts .replay {
+  color: #FFE6C0;
+  background: rgba(36, 7, 25, 0.6);
+}
+
+.onHearts .scrim { background: rgba(18, 2, 13, 0.72); }
+
+.onHearts .giftCard {
+  background: linear-gradient(170deg, #3C0F2C 0%, #22061A 100%);
+  border-color: rgba(255, 214, 160, 0.42);
+}
+.onHearts .giftTitle { color: #FFD9A0; }
+.onHearts .giftBody  { color: rgba(255, 240, 246, 0.86); }
+.onHearts .giftIndex { color: rgba(255, 240, 246, 0.58); }
+
+/* Warm candlelight instead of a white bloom. */
+.onHearts .cakeGlow {
+  background: radial-gradient(circle, rgba(255, 213, 148, 0.5) 0%, rgba(255, 150, 200, 0.18) 40%, transparent 68%);
+}
+.onHearts .fogPuff {
+  background: radial-gradient(circle, rgba(255, 226, 240, 0.5) 0%, rgba(214, 168, 205, 0.2) 45%, transparent 72%);
+}
+.onHearts .plateShadow {
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55), transparent 70%);
+}
+
+/* ── Small screens ───────────────────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .arena {
+    --cake-mid: clamp(140px, 19.5vh, 190px);
+    /* Taller arc on a phone: at 150° the sides only rise half a radius, and a
+       shorter one left them clipping the cake's top tier. */
+    --arc-rx: clamp(104px, 29vw, 158px);
+    --arc-ry: clamp(305px, 35vh, 400px);
+    --arc-head: 64px;
+  }
+  .arenaTall { --arc-head: 215px; }
+  .giftSlot { width: clamp(168px, 42vw, 228px); }
+  .greetingText { font-size: clamp(2.6rem, 12vw, 4.2rem); -webkit-text-stroke-width: 2px; }
+  .arena { margin-top: 48px; }
+  /* Stacked in the bottom corner: side by side they ran into the flame
+     control, and along the top they sat on the greeting. */
+  .corner {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    bottom: 10px;
+    right: 10px;
+  }
+  .cakeWrap { width: 750px; margin-left: -375px; padding-top: 168px; }
+  .cake { width: 750px; transform: scale(0.50); transform-origin: bottom center; }
+  .giftName { font-size: clamp(1.1rem, 4.8vw, 1.45rem); }
+  /* No room beside the cake on a phone — the box goes under it. Centred with
+     margin, not transform, so .blowIn's `transform: none` can't undo it. */
+  .blowBox { margin-top: -30px; }
+  .blowImg { width: min(174px, 44vw); }
+}
+
+@media (max-width: 420px) {
+  .key { width: 76px; height: 76px; }
+  .clock { font-size: 60px; }
+  .screen { min-height: 640px; }
+  .giftSlot { width: 160px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage *,
+  .stage *::before,
+  .stage *::after {
+    animation-duration: 0.01ms !important;
+    /* Delays too — a one-second staggered reveal is exactly the kind of
+       motion someone asking for reduced motion wants skipped. */
+    animation-delay: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+  }
+  .giftSlot { opacity: 1; }
+}
